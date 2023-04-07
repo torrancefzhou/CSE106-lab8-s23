@@ -80,6 +80,11 @@ def home():
     data = Course.query.all()
     return jsonify([{"name": item.name, "instructor": item.instructor, "time": item.time, "currentEnrollment": item.currentEnrollment, "maxEnrollment": item.maxEnrollment} for item in data])
 
+@app.route('/enrolled')
+def enrolled():
+    data = Enrollment.query.all()
+    return jsonify([{"classid": item.classid, "grade": item.grade} for item in data])
+
 @app.route('/index')
 @app.route('/')
 @login_required

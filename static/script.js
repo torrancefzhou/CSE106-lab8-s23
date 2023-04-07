@@ -11,7 +11,7 @@ function getGrades() {
     xhttp.onload = function() {
       var data = JSON.parse(this.responseText);
       var table = "<table border='1'>";
-      table += "<thead><tr><th>Name</th><th>Instructor</th><th>Time</th><th>Current Enrollment</th></tr><th>Max Enrollment</th></tr></thead>";
+      table += "<thead><tr><th>Name</th><th>Instructor</th><th>Time</th><th>Current Enrollment</th><th>Max Enrollment</th></tr></thead>";
       table += "<tbody>";
       for (var i = 0; i < data.length; i++) {
         table += "<tr><td>" + data[i].name + "</td>";
@@ -24,4 +24,24 @@ function getGrades() {
       document.getElementById("demo").innerHTML = table;
     };
     xhttp.send();
-  }
+}
+// getGrades()
+
+function enrolledCourses() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.open("GET", "http://127.0.0.1:5000/enrolled");
+    xhttp.onload = function() {
+      var data = JSON.parse(this.responseText);
+      var table = "<table border='1'>";
+      table += "<thead><tr><th>Class id</th><th>Grade</th></tr></thead>";
+      table += "<tbody>";
+      for (var i = 0; i < data.length; i++) {
+        table += "<tr><td>" + data[i].classid + "</td>";
+        table += "<td>" + data[i].grade + "</td>";
+      }
+      table += "</tbody></table>";
+      document.getElementById("demo").innerHTML = table;
+    };
+    xhttp.send();
+}
+enrolledCourses()
