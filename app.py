@@ -1,69 +1,93 @@
-from flask import Flask, render_template, request
-import json
+from flask import Flask, redirect, url_for, request, render_template
+from flask_admin import Admin
 from flask_sqlalchemy import SQLAlchemy
-# will likely need flask-user, flask-admin
-# from sqlalchemy import exc # for specific errors, not sure if needed
+from flask_admin.contrib.sqla import ModelView
+from flask_login import current_user, login_user, login_required, LoginManager, UserMixin, logout_user
 
-db = SQLAlchemy()
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///project.db"
-db.init_app(app)
+
+# set optional bootswatch theme
+app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///example.sqlite"
+app.secret_key = 'super secret key'
+app.app_context().push()
+db = SQLAlchemy(app)
+
+
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String, unique=True, nullable=False)
+    password = db.Column(db.String, unique=True, nullable=False)
+
+    def check_password(self, password):
+        return self.password == password
 
 class Course(db.Model):
     id = db.Column(db.Integer, unique=True, primary_key=True, nullable=False)
-    school = db.Column(db.String) # e.g "CSE"
-    number = db.Column(db.Integer) # e.g. 106
     name = db.Column(db.String) # e.g. "Exploratory Computing"
     instructor = db.Column(db.String) # e.g. "Amon Hepsworth"
     time = db.Column(db.String) # e.g. "TR 3:00PM - 4:15PM"
     currentEnrollment = db.Column(db.Integer) # e.g. 4 (/10)
     maxEnrollment = db.Column(db.Integer) # e.g. 10 (4/)
 
-# DESIGN QUESTIONS
-# should Course->Instructor be the Instructor's ID instead?
-# should Course->Time be split into Days of Week / Time?
-# should Grades belong to Course or Student, or both?
-# should Enrollment belong to Course or Student, or both?
-# probably more
-
-class Student():
+class Enrollment(db.Model):
     id = db.Column(db.Integer, unique=True, primary_key=True, nullable=False)
-    name = db.Column(db.String)
+    studentid = db.Column(db.Integer)
+    classid = db.Column(db.Integer)
+    grade = db.Column(db.Integer)
+    
 
-class Instructor():
+class Instruction(db.Model):
     id = db.Column(db.Integer, unique=True, primary_key=True, nullable=False)
-    name = db.Column(db.String)
-
-class Account(): # TODO: username, password, etc
-    id = db.Column(db.Integer, unique=True, primary_key=True, nullable=False)
-    type = db.Column(db.Character, nullable=False) # 's'tudent, 'i'nstructor, 'a'dmin
-    roleID = db.Column(db.Integer, nullable=False) # student with id#1, etc
+    classid = db.Column(db.Integer)
+    teacherid = db.Column(db.Integer)
+    grade = db.Column(db.Integer)
+    
 
 with app.app_context():
-    db.drop_all() # resets tables between instances
+    # db.drop_all() # resets tables between instances, do this if you change table models
     db.create_all()
 
-@app.get("/")
-def index():
-    return render_template("index.html")
+admin = Admin(app, name='gradebook', template_mode='bootstrap3')
+admin.add_view(ModelView(User, db.session))
+admin.add_view(ModelView(Course, db.session))
+admin.add_view(ModelView(Enrollment, db.session))
+admin.add_view(ModelView(Instruction, db.session))
+#admin.add_view(ModelView(Account, db.session))
 
-@app.get("/classes") # complies with example table in Lab8.pdf, should change later
-def get_all_courses():
-    json = {}
-    for c in Course.query.all():
-        json.update({"name": c.school + str(c.number) + ": " + c.name, \
-                     "instructor": c.instructor, \
-                     "time": c.time, \
-                     "enrollment": str(c.enrollment) + "/" + str(c.maxEnrollment) \
-                     })
-    return json
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
 
-@app.post("/add")
-def add_course():
-    pass
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(user_id)
 
-@app.post("/drop")
-def drop_course():
-    pass
+@app.route('/index')
+@app.route('/')
+@login_required
+def index(): # put application's code here
+    return render_template('index.html')
 
+@app.route('/login')
+def login_page():
+    return render_template('login.html')
 
+@app.route('/login', methods=['POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    user = User.query.filter_by(username=request.form['username']).first()
+    if user is None or not user.check_password(request.form['password']):
+        return redirect(url_for('login'))
+    login_user(user)
+    return redirect(url_for('index'))
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect('login')
+
+if __name__ == "__main__":
+    app.run()
