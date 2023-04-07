@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, request, render_template
+from flask import Flask, redirect, url_for, request, render_template, jsonify
 from flask_admin import Admin
 from flask_sqlalchemy import SQLAlchemy
 from flask_admin.contrib.sqla import ModelView
@@ -62,6 +62,23 @@ login_manager.login_view = 'login'
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(user_id)
+
+# def createJson(grades):
+#     json = {}
+
+#     for students in grades:
+#         json.update({students.name: students.instructor})
+    
+#     return json
+
+# @app.route('/home', methods=['GET'])
+# def home_page():
+#     return createJson(Course.query.all())
+
+@app.route('/home')
+def home():
+    data = Course.query.all()
+    return jsonify([{"name": item.name, "instructor": item.instructor, "time": item.time, "currentEnrollment": item.currentEnrollment, "maxEnrollment": item.maxEnrollment} for item in data])
 
 @app.route('/index')
 @app.route('/')
