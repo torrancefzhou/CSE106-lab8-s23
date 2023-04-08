@@ -17,7 +17,9 @@ db = SQLAlchemy(app)
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String, unique=True, nullable=False)
-    password = db.Column(db.String, unique=True, nullable=False)
+    password = db.Column(db.String, unique=False, nullable=False)
+    is_teacher = db.Column(db.Boolean, nullable=False)
+    is_admin = db.Column(db.Boolean, nullable=False)
 
     def check_password(self, password):
         return self.password == password
@@ -114,6 +116,15 @@ def login():
     user = User.query.filter_by(username=request.form['username']).first()
     if user is None or not user.check_password(request.form['password']):
         return redirect(url_for('login'))
+    
+    # checks to see if user is one of the 3 roles.
+    if (user.is_teacher == True):
+        return("teacher")
+    elif (user.is_admin == True):
+        return("admin")
+    else:
+        return("student")
+
     login_user(user)
     return redirect(url_for('index'))
 
