@@ -82,8 +82,20 @@ def home():
 
 @app.route('/enrolled')
 def enrolled():
-    data = Enrollment.query.all()
-    return jsonify([{"classid": item.classid, "grade": item.grade} for item in data])
+    enrollments = Enrollment.query.all()
+    instructions = Instruction.query.all()
+
+    data = []
+    for e in enrollments:
+        for i in instructions:
+            if e.classid == i.classid:
+                data.append({'classid': i.classid, 'grade': i.grade, 'studentid': e.studentid})
+                break  
+
+    return jsonify(data)
+
+
+    # return jsonify([{"classid": item.classid, "grade": item.grade} for item in data])
 
 @app.route('/index')
 @app.route('/')
