@@ -5,6 +5,8 @@ from flask_admin.contrib import sqla
 from flask_admin.contrib.sqla import ModelView
 from flask_login import current_user, login_user, login_required, LoginManager, UserMixin, logout_user
 
+from sqlalchemy import inspect
+
 app = Flask(__name__)
 
 # set optional bootswatch theme
@@ -23,6 +25,9 @@ class Account(UserMixin, db.Model):
     is_teacher = db.Column(db.Boolean, nullable=False)
     is_admin = db.Column(db.Boolean, nullable=False)
 
+    teaching = db.relationship('Courses', backref='account')
+    enrollment = db.relationship('Grades', backref='account')
+
     def __repr__(self):
         return '<Account %r>' % self.username
 
@@ -37,6 +42,8 @@ class Courses(db.Model):
     currentEnrollment = db.Column(db.Integer) # e.g. 4 (/10)
     maxEnrollment = db.Column(db.Integer) # e.g. (4/) 10
     instructor_id = db.Column(db.Integer, db.ForeignKey('account.id'), nullable=False) # e.g. "1001"
+    # instructor = db.relationship('Account', backref=db.backref('courses', lazy='dynamic'))
+    grades = db.relationship('Grades', backref='courses')
 
     def __repr__(self):
         return '<Course %r>' % self.name
@@ -45,7 +52,9 @@ class Courses(db.Model):
 class Grades(db.Model):
     id = db.Column(db.Integer, unique=True, primary_key=True, nullable=False)
     student_id = db.Column(db.Integer, db.ForeignKey('account.id'), nullable=False)
+    # students = db.relationship('Account', backref=db.backref('account', lazy='dynamic'))
     class_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=False)
+    # course = db.relationship('Courses', backref=db.backref('courses', lazy='dynamic'))
     grade = db.Column(db.Integer)
 
 
@@ -53,19 +62,57 @@ with app.app_context():
     # db.drop_all() # resets tables between instances, do this if you change table models
     db.create_all()
 
-class MyModelView(sqla.ModelView):
+
+# class MyModelView(sqla.ModelView):
+#    column_hide_backrefs = False
+#    column_list = [c_attr.key for c_attr in inspect(Grades).mapper.column_attrs]
+#    def is_accessible(self):
+#        return True # to make new account after resetting DB
+#        return current_user.get_id() and current_user.is_admin
+#    def inaccessible_callback(self, name, **kwargs):
+#        redirect to login page if user doesn't have access
+#        return redirect(url_for('login', next=request.url))
+    
+class AccountModelView(sqla.ModelView):
+    column_hide_backrefs = False
+    column_list = [c_attr.key for c_attr in inspect(Account).mapper.column_attrs]
+
     def is_accessible(self):
+        return True # to make new account after resetting DB
         return current_user.get_id() and current_user.is_admin
 
     def inaccessible_callback(self, name, **kwargs):
         # redirect to login page if user doesn't have access
         return redirect(url_for('login', next=request.url))
 
+class CourseModelView(sqla.ModelView):
+    column_hide_backrefs = False
+    column_list = [c_attr.key for c_attr in inspect(Courses).mapper.column_attrs]
+
+    def is_accessible(self):
+        return True # to make new account after resetting DB
+        return current_user.get_id() and current_user.is_admin
+
+    def inaccessible_callback(self, name, **kwargs):
+        # redirect to login page if user doesn't have access
+        return redirect(url_for('login', next=request.url))
+    
+class GradeModelView(sqla.ModelView):
+    column_hide_backrefs = False
+    column_list = [c_attr.key for c_attr in inspect(Grades).mapper.column_attrs]
+
+    def is_accessible(self):
+        return True # to make new account after resetting DB
+        return current_user.get_id() and current_user.is_admin
+
+    def inaccessible_callback(self, name, **kwargs):
+        # redirect to login page if user doesn't have access
+        return redirect(url_for('login', next=request.url))
 
 admin = Admin(app, name='gradebook', template_mode='bootstrap3')
-admin.add_view(MyModelView(Account, db.session))
-admin.add_view(MyModelView(Courses, db.session))
-admin.add_view(MyModelView(Grades, db.session))
+admin.add_view(AccountModelView(Account, db.session))
+admin.add_view(CourseModelView(Courses, db.session))
+admin.add_view(GradeModelView(Grades, db.session))
 
 login_manager = LoginManager()
 login_manager.init_app(app)
