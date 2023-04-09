@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, request, render_template, jsonify
+from flask import Flask, redirect, url_for, request, render_template, jsonify, session
 from flask_admin import Admin
 from flask_sqlalchemy import SQLAlchemy
 from flask_admin.contrib.sqla import ModelView
@@ -105,23 +105,27 @@ def enrolled():
 def index(): # put application's code here
     return render_template('index.html')
 
-@app.route('/login')
+@app.route('/login', methods=['GET'])
 def login_page():
     return render_template('login.html')
 
 @app.route('/login', methods=['POST'])
 def login():
+    u = request.json.get('username')
+    p = request.json.get('password')
+    print(u)
+    print(p)
     if current_user.is_authenticated:
         return redirect(url_for('index'))
-    user = User.query.filter_by(username=request.form['username']).first()
-    if user is None or not user.check_password(request.form['password']):
-        return redirect(url_for('login'))
+    user = User.query.filter_by(username=u).first()
+    if user is None or not user.check_password(p):
+        return "login failed", 401
     
-    # checks to see if user is one of the 3 roles.
-    if (user.is_teacher == True):
-        return("teacher")
-    elif (user.is_admin == True):
+    # checks to see if user is one of the 3 roles
+    if (user.is_admin == True):
         return("admin")
+    elif (user.is_teacher == True):
+        return("teacher")
     else:
         return("student")
 

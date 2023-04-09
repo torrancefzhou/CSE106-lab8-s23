@@ -8,13 +8,53 @@
 </head>
 
 <body>
+    {% if error %}
+    <h3 style="color:red;"> {{error}} </h3>
+    {% endif %}
     <div>
-        <input placeholder="Username"></input>
-        <br><br>
-        <input placeholder="Password" type="password"></input>
-        <br><br>
-        <button>Log in</button>
+        <form id="login" action="/login">
+            <label for="username">Username</label><br>
+            <input id="username" placeholder="Username">
+            <br>
+            <label for="password">Password</label><br>
+            <input id="password" placeholder="Password" type="password">
+            <br>
+            <input type="submit" value="Log In">
+        </form>
     </div>
+    <script>
+        const loginForm = document.querySelector('#login');
+
+        loginForm.addEventListener('submit', (event) => {
+            event.preventDefault(); // Prevents the form from submitting via the browser
+
+            const formData = new FormData(loginForm);
+            const data = {
+                username: document.querySelector('#username').value,
+                password: document.querySelector('#password').value,
+            };
+            console.log(data);
+
+            fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response;
+                } else {
+                    throw Error(response.statusText);
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                alert("Incorrect username or password.");
+            });
+        });
+    </script>
 </body>
 
 </html>

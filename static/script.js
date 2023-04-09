@@ -45,4 +45,3 @@ function enrolledCourses() {
     };
     xhttp.send();
 }
-enrolledCourses();
