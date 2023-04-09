@@ -77,6 +77,12 @@ def load_user(user_id):
 # def home_page():
 #     return createJson(Course.query.all())
 
+# get teacher id
+@app.route('/get_teacher_ids')
+def get_teacher_ids():
+    teacher_ids = [row[0] for row in Instruction.query.with_entities(Instruction.teacherid).distinct()]
+    return jsonify({'teacher_ids': teacher_ids})
+
 @app.route('/home')
 def home():
     data = Course.query.all()
@@ -118,12 +124,12 @@ def login():
         return redirect(url_for('login'))
     
     # checks to see if user is one of the 3 roles.
-    if (user.is_teacher == True):
-        return("teacher")
-    elif (user.is_admin == True):
-        return("admin")
-    else:
-        return("student")
+    # if (user.is_teacher == True):
+    #     return("teacher")
+    # elif (user.is_admin == True):
+    #     return("admin")
+    # else:
+    #     return("student")
 
     login_user(user)
     return redirect(url_for('index'))

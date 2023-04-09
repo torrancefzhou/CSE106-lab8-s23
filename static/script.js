@@ -46,3 +46,37 @@ function enrolledCourses() {
     xhttp.send();
 }
 enrolledCourses();
+
+// function that gets teacher id and sends to html dropdown
+window.onload = function func(){
+    const dropdown = document.getElementById("teacher-dropdown");
+    
+    // Get options from server
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', '/get_teacher_ids');
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        const data = JSON.parse(xhr.responseText);
+        const teacherIds = data.teacher_ids;
+    
+        // Add default option
+        const defaultOption = document.createElement("option");
+        defaultOption.text = "Select a Teacher";
+        dropdown.add(defaultOption);
+    
+        // Add options from database
+        for (let i = 0; i < teacherIds.length; i++) {
+          const option = document.createElement("option");
+          option.text = teacherIds[i];
+          option.value = teacherIds[i];
+          dropdown.add(option);
+        }
+      } else {
+        console.error(xhr.statusText);
+      }
+    };
+    xhr.onerror = function() {
+      console.error(xhr.statusText);
+    };
+    xhr.send();
+}    
