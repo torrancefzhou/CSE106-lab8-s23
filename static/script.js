@@ -107,7 +107,7 @@ function seeGrades(course) {
              "<th>Grade</th></tr>";
 
     for (var i = 0; i < data.length; i++) {
-      table += "<tr><td>" + data[i].name + "</td>";
+      table += "<tr><td>" + data[i].student + "</td>";
       table += "<td>" + data[i].grade + "</td>";
     }
 
