@@ -60,14 +60,13 @@
 
     <div class="box">
         <ul>
-            <li style="width:50%"><a onclick="getStudentClasses()" class="active">Enrolled Courses</a></li>
-            <li style="width:50%"><a onclick="allClasses()">Add Courses</a></li>
+            <li style="width:50%"><a id="enrolledHeader" onclick="getStudentClasses()" class="active">Enrolled Courses</a></li>
+            <li style="width:50%"><a id="addHeader" onclick="allClasses()">Add Courses</a></li>
         </ul>
-
         <div id="placeholder"></div>
     </div>
     <script>
-        // run functions here
+        getStudentClasses();
     </script>
 </body>
 

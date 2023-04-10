@@ -7,7 +7,7 @@ function printToConsole() {
 
 function getStudentClasses() {
     var xhttp = new XMLHttpRequest();
-    xhttp.open("GET", "http://localhost:5000/class");
+    xhttp.open("GET", "/class");
     xhttp.onload = function() {
       var data = JSON.parse(this.responseText);
       var table = "<table border='1' id='classTable'>";
@@ -22,34 +22,34 @@ function getStudentClasses() {
         table += "<td>" + data[i].instructor + "</td>";
         table += "<td>" + data[i].time + "</td>";
         table += "<td>" + data[i].currentEnrollment + "/" + data[i].maxEnrollment + "</td>";
-        table += "<td onclick='dropCourse(\"" + data[i].name + "\")'>" + "Drop Class" + "</td></tr>"
+        table += "<td><button onclick='dropCourse(\"" + data[i].name + "\")'>" + "Drop Class" + "</button></td></tr>"
       }
-              
-
       document.getElementById("placeholder").innerHTML = table;
+      document.getElementById("addHeader").classList.remove("active");
+      document.getElementById("enrolledHeader").classList.add("active");
     };
     xhttp.send();
 }
 
 function getTeacherClasses() {
     var xhttp = new XMLHttpRequest();
-    xhttp.open("GET", "http://localhost:5000/class");
+    xhttp.open("GET", "/class");
     xhttp.onload = function() {
       var data = JSON.parse(this.responseText);
       var table = "<table border='1' id='classTable'>";
       table += "<tr><th>Name</th>" +
                "<th>Instructor</th>" +
                "<th>Time</th>" +
-               "<th>Students Enrollment</th></tr>";
-
+               "<th>Students Enrollment</th>" +
+               "<th></th></tr>";
       for (var i = 0; i < data.length; i++) {
-          classname = data[i].name;
+        classname = data[i].name;
         table += "<tr><td onclick='seeGrades(\"" + classname + "\")'>" + classname + "</td>";
         table += "<td>" + data[i].instructor + "</td>";
         table += "<td>" + data[i].time + "</td>";
-        table += "<td>" + data[i].currentEnrollment + "/" + data[i].maxEnrollment + "</td></tr>";
+        table += "<td>" + data[i].currentEnrollment + "/" + data[i].maxEnrollment + "</td>";
+        table += "<td>" + "<button onclick='seeGrades(\"" + classname + "\")'>" + "View Grades</button></td></tr>";
       }
-
       document.getElementById("placeholder").innerHTML = table;
     };
     document.getElementById("header").innerHTML = "Your Courses"
@@ -58,7 +58,7 @@ function getTeacherClasses() {
 
 function allClasses() {
     var xhttp = new XMLHttpRequest();
-    xhttp.open("GET", "http://localhost:5000/classes");
+    xhttp.open("GET", "/classes");
     xhttp.onload = function() {
       var data = JSON.parse(this.responseText);
       var table = "<table border='1' id='classTable'>";
@@ -77,13 +77,14 @@ function allClasses() {
             table += "<td>" + "Not available" + "</td></tr>";
         }
         else if ((checkEnrollment(data[i].name)) == "True"){
-            table += "<td onclick='studentDropClass(\"" + data[i].name + "\")'>" + "Drop Class" + "</td></tr>"
+            table += "<td><button onclick='studentDropClass(\"" + data[i].name + "\")'>" + "Drop Class" + "</button></td></tr>"
         }
         else{
-            table += "<td onclick='studentAddClass(\"" + data[i].name + "\")'>" + "Add Class" + "</td></tr>"
+            table += "<td><button onclick='studentAddClass(\"" + data[i].name + "\")'>" + "Add Class" + "</button></td></tr>"
         }
       }
-
+      document.getElementById("addHeader").classList.add("active");
+      document.getElementById("enrolledHeader").classList.remove("active");
       document.getElementById("placeholder").innerHTML = table;
     };
     xhttp.send();
@@ -91,14 +92,14 @@ function allClasses() {
 
 function checkEnrollment(course) {
     var xhttp = new XMLHttpRequest();
-    xhttp.open("GET", "http://localhost:5000/class/" + course);
+    xhttp.open("GET", "/class/" + course);
     xhttp.send();
     return this.responseText;
 }
 
 function seeGrades(course) {
   var xhttp = new XMLHttpRequest();
-  xhttp.open("GET", "http://localhost:5000/classes/" + course);
+  xhttp.open("GET", "/classes/" + course);
   xhttp.onload = function() {
     var data = JSON.parse(this.responseText);
     var table = "<table border='1' id='classTable'>";
@@ -112,14 +113,14 @@ function seeGrades(course) {
 
     document.getElementById("placeholder").innerHTML = table;
   };
-  document.getElementById("header").innerHTML = course + "-------Click to return to course list";
+  document.getElementById("header").innerHTML = "<button style='float:left;' onclick=\"getTeacherClasses()\">Back to course list</button>" + course;
   xhttp.send();
 }
 
 
 function editGrades(course, grade, student) {
     var xhttp = new XMLHttpRequest();
-    xhttp.open("PUT", "http://localhost:5000/classes/" + course);
+    xhttp.open("PUT", "/classes/" + course);
     xhttp.setRequestHeader("Content-Type", "application/json");
     const body = {"name": student, "grade": grade};
     xhttp.send(JSON.stringify(body));
@@ -130,7 +131,7 @@ function editGrades(course, grade, student) {
 
 function deleteGrades(course, student) {
     var xhttp = new XMLHttpRequest();
-    xhttp.open("DELETE", "http://localhost:5000/classes/" + course);
+    xhttp.open("DELETE", "/classes/" + course);
     xhttp.onload = function() {
       var data = JSON.parse(this.responseText);
       var table = "<table border='1' id='classTable'>";
@@ -149,7 +150,7 @@ function deleteGrades(course, student) {
 
 function studentAddClass(course) {
     var xhttp = new XMLHttpRequest();
-    xhttp.open("POST", "http://localhost:5000/classes/" + course);
+    xhttp.open("POST", "/classes/" + course);
     xhttp.send();
     xhttp.onload = function() {
         document.getElementById("placeholder").innerHTML = this.responseText;
@@ -158,7 +159,7 @@ function studentAddClass(course) {
 
 function dropCourse(course) {
   var xhttp = new XMLHttpRequest();
-  xhttp.open("DELETE", "http://localhost:5000/classes/" + course);
+  xhttp.open("DELETE", "/classes/" + course);
   xhttp.onload = function() {
       var response = JSON.parse(this.responseText);
       if (response.success) {
