@@ -207,24 +207,35 @@ def editGrade(course, body):
 @app.route("/classes/<course>", methods=['POST'])
 @login_required
 def addStudent(course):
-    newStudent = Grades(student_id=current_user.id,
-                     class_id=(Courses.query.filter_by(name=course).first()).id,
-                     grade=0)
-    (Courses.query.filter_by(name=course).first()).currentEnrollment = (Courses.query.filter_by(name=course).first()).currentEnrollment + 1
+    find_course = Courses.query.filter_by(name=course).first()
+
+    # check enrollment of student
+    enrollment = Grades.query.filter_by(student_id=current_user.id, class_id=find_course.id).count()
+    if enrollment > 0:
+        return 'Already enrolled in '+course+''
+
+    # add student to course
+    newStudent = Grades(student_id=current_user.id, class_id=find_course.id, grade=0)
+    find_course.currentEnrollment += 1
     db.session.add(newStudent)
     db.session.commit()
-    return course
+    return 'Enrolled in '+course+''
+
 
 @app.route("/classes/<course>", methods=['DELETE'])
 @login_required
 def dropStudent(course):
-    classid = (Courses.query.filter_by(name=course).first()).id
-    classGrades = Grades.query.filter_by(class_id=classid).all()
-    classGrades.query.filter_by(student_id=current_user.id).delete()
-    (Courses.query.filter_by(name=course).first()).currentEnrollment = (Courses.query.filter_by(
-        name=course).first()).currentEnrollment - 1
-    db.session.commit()
-    return course
+    find_course = Courses.query.filter_by(name=course).first()
+    classid = find_course.id
+    grade_obj = Grades.query.filter_by(student_id=current_user.id, class_id=classid).first()
+    if grade_obj:
+        db.session.delete(grade_obj)
+        find_course.currentEnrollment -= 1
+        db.session.commit()
+        return jsonify({'success': True})
+    else:
+        return jsonify({'success': False})
+
 
 @app.route("/logout")
 @login_required
