@@ -52,7 +52,7 @@ function getTeacherClasses() {
       }
       document.getElementById("placeholder").innerHTML = table;
     };
-    document.getElementById("header").innerHTML = "Your Courses"
+    document.getElementById("header").innerHTML = "<a>Your Courses</a>"
     xhttp.send();
 }
 
@@ -113,7 +113,7 @@ function seeGrades(course) {
 
     document.getElementById("placeholder").innerHTML = table;
   };
-  document.getElementById("header").innerHTML = "<button style='float:left;' onclick=\"getTeacherClasses()\">Back to course list</button>" + course;
+  document.getElementById("header").innerHTML = "<button class='back-button' onclick=\"getTeacherClasses()\">Back to course list</button><a>" + course + "</a>";
   xhttp.send();
 }
 
@@ -153,7 +153,8 @@ function studentAddClass(course) {
     xhttp.open("POST", "/classes/" + course);
     xhttp.send();
     xhttp.onload = function() {
-        document.getElementById("placeholder").innerHTML = this.responseText;
+      alert(this.responseText);
+      allClasses();
     };
 }
 
@@ -164,9 +165,9 @@ function dropCourse(course) {
       var response = JSON.parse(this.responseText);
       if (response.success) {
           getStudentClasses();
-          document.getElementById("message").innerHTML = "Unenrolled from " + course;
+          alert("Unenrolled from " + course);
       } else {
-          document.getElementById("message").innerHTML = response.message;
+          alert(response.message);
       }
   };
   xhttp.send();
