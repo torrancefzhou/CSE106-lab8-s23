@@ -196,13 +196,22 @@ def getGrade(course):
 
 @app.route("/classes/<course>", methods=['PUT'])
 @login_required
-def editGrade(course, body):
+def editGrade(course):
     classid = (Courses.query.filter_by(name=course).first()).id
     classgrades = Grades.query.filter_by(class_id=classid).all()
-    studentid = (Account.query.filter_by(name=body.name).first()).id
-    studentgrade = classgrades.query.filter_by(student_id=studentid).first()
-    studentgrade.grade = body.grade
-    return
+    body = request.get_json()
+    print("Student name from request:", body['name'])
+    student = Account.query.filter_by(name=body['name']).first()
+    if student:
+        studentid = student.id
+        studentgrade = [g for g in classgrades if g.student_id == studentid][0]
+        studentgrade.grade = body['grade']
+        db.session.commit()
+        return jsonify({'success': True})
+    else:
+        return jsonify({'success': False})
+
+
 
 @app.route("/classes/<course>", methods=['POST'])
 @login_required
