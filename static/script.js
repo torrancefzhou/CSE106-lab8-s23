@@ -104,11 +104,13 @@ function seeGrades(course) {
     var data = JSON.parse(this.responseText);
     var table = "<table border='1' id='classTable'>";
     table += "<tr><th>Student Name</th>" +
-             "<th>Grade</th></tr>";
+             "<th>Grade (click to edit)</th>" + 
+             "<th></th></tr>";
 
     for (var i = 0; i < data.length; i++) {
       table += "<tr><td>" + data[i].student + "</td>";
-      table += "<td contenteditable='true' id='grade-" + i + "'>" + data[i].grade + "</td>";
+      table += "<td contenteditable='true'>" + data[i].grade + "</td>";
+      table += "<td><button id='grade-" + i + "'>Change Grade</button></td></tr>";
     }
 
     document.getElementById("placeholder").innerHTML = table;
@@ -116,10 +118,9 @@ function seeGrades(course) {
     // Add event listeners to capture changes made by the user
     for (var i = 0; i < data.length; i++) {
       var gradeCell = document.getElementById("grade-" + i);
-      gradeCell.addEventListener("blur", function(event) {
-        var studentName = this.parentNode.firstChild.innerHTML;
-        var newGrade = this.innerHTML;
-        var newGrade = this.innerHTML;
+      gradeCell.addEventListener("click", function(event) {
+        var studentName = this.parentNode.parentNode.firstChild.innerHTML;
+        var newGrade = this.parentNode.parentNode.childNodes[1].innerHTML;
         editGrades(course, newGrade, studentName);
       });
     }
@@ -127,8 +128,6 @@ function seeGrades(course) {
   document.getElementById("header").innerHTML = "<button class='back-button' onclick=\"getTeacherClasses()\">Back to course list</button><a>" + course + "</a>";
   xhttp.send();
 }
-
-
 
 function editGrades(course, grade, student) {
     var xhttp = new XMLHttpRequest();

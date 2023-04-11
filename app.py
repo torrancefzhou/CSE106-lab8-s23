@@ -64,10 +64,11 @@ with app.app_context():
 
 class AccountModelView(sqla.ModelView):
     column_hide_backrefs = False
-    column_list = [c_attr.key for c_attr in inspect(Account).mapper.column_attrs]
+    # column_list = [c_attr.key for c_attr in inspect(Account).mapper.column_attrs]
+    column_list = ['id', 'username', 'name', 'is_teacher', 'is_admin', 'teaching', 'enrollment']
 
     def is_accessible(self):
-        return True  # to make new account after resetting DB
+        # return True  # to make new account after resetting DB
         return current_user.get_id() and current_user.is_admin
 
     def inaccessible_callback(self, name, **kwargs):
@@ -80,7 +81,7 @@ class CourseModelView(sqla.ModelView):
     column_list = [c_attr.key for c_attr in inspect(Courses).mapper.column_attrs]
 
     def is_accessible(self):
-        return True  # to make new account after resetting DB
+        # return True  # to make new account after resetting DB
         return current_user.get_id() and current_user.is_admin
 
     def inaccessible_callback(self, name, **kwargs):
@@ -93,7 +94,7 @@ class GradeModelView(sqla.ModelView):
     column_list = [c_attr.key for c_attr in inspect(Grades).mapper.column_attrs]
 
     def is_accessible(self):
-        return True  # to make new account after resetting DB
+        # return True  # to make new account after resetting DB
         return current_user.get_id() and current_user.is_admin
 
     def inaccessible_callback(self, name, **kwargs):
