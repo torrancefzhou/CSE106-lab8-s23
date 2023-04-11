@@ -108,14 +108,26 @@ function seeGrades(course) {
 
     for (var i = 0; i < data.length; i++) {
       table += "<tr><td>" + data[i].student + "</td>";
-      table += "<td>" + data[i].grade + "</td>";
+      table += "<td contenteditable='true' id='grade-" + i + "'>" + data[i].grade + "</td>";
     }
 
     document.getElementById("placeholder").innerHTML = table;
+
+    // Add event listeners to capture changes made by the user
+    for (var i = 0; i < data.length; i++) {
+      var gradeCell = document.getElementById("grade-" + i);
+      gradeCell.addEventListener("blur", function(event) {
+        var studentName = this.parentNode.firstChild.innerHTML;
+        var newGrade = this.innerHTML;
+        var newGrade = this.innerHTML;
+        editGrades(course, newGrade, studentName);
+      });
+    }
   };
   document.getElementById("header").innerHTML = "<button class='back-button' onclick=\"getTeacherClasses()\">Back to course list</button><a>" + course + "</a>";
   xhttp.send();
 }
+
 
 
 function editGrades(course, grade, student) {
@@ -125,7 +137,7 @@ function editGrades(course, grade, student) {
     const body = {"name": student, "grade": grade};
     xhttp.send(JSON.stringify(body));
     xhttp.onload = function() {
-        document.getElementById("placeholder").innerHTML = "The grade has been edited";
+        alert("Grade changed successfully")
     };
 }
 
